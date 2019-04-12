@@ -1,0 +1,32 @@
+#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+arrow() {
+    local left=$1; shift
+    local right=$1; shift
+
+    local reset="\e[0m"
+    local left_color="\e[35;1m"
+    local right_color="\e[34;1m"
+    local arrow_color="\e[93;1m"
+    echo -e "$left_color$left $arrow_color→$right_color $right$reset"
+}
+
+main() {
+    local branches;
+    read -a branches <<< "$@"
+        for i in "${!branches[@]}"; do
+            local left=${branches[$i]}
+            set +o nounset
+            local right=${branches[$i + 1]}
+            set -o nounset
+            if [ ! -z "$right" ]; then
+                echo "$(arrow "$left" "$right")"
+                git rebase "$left" "$right"
+            fi
+        done
+}
+
+main "$@"
